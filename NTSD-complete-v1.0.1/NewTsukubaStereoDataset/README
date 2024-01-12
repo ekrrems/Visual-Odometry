@@ -1,0 +1,83 @@
+This is the New Tsukuba Stereo Dataset created at Tsukuba University's CVLAB.
+(http://cvlab.cs.tsukuba.ac.jp)
+
+It is aimed at serving as a benchmark to develop and evaluate computer vision
+algorithms, such as stereo matching, camera tracking or structure from motion
+algorithms.
+
+It contains a CG-generated video sequence of 1 minute at 30 FPS (1800 frames 
+in total) with 4 differnet illumination conditions. Additionally, several 
+kinds of ground truth data are provided for evaluation.
+
+For further details please refer to the following papers:
+
+[1] "Realistic CG Stereo Image Dataset with Ground Truth Disparity Maps", 
+Martull et al., TrackMark 2012.
+
+[2] "Towards a Simulation Driven Stereo Vision System",
+Peris et al., ICPR2012.
+
+We grant permission to use and publish all the contents of this datset for
+Research and Educational purposes. However, if you use our datset, we kindly 
+request that you cite the associated papers: [1] and [2].
+
+To use the dataset for purposes other than Research and Education, please
+contact Prof. Kazuhiro Fukui (kfukui@cs.tsukuba.ac.jp).
+-------------------------------------------------------------------------------
+
+Contents of the dataset:
+
+NewTsukubaStereoDataset/README -> This file
+
+NewTsukubaStereoDataset/illumination/daylight -> Rendered color images for left
+	and right camera under daylight illumunation. 1800 images per camera 
+	in PNG format.
+
+NewTsukubaStereoDataset/illumination/flashlight -> Rendered color images for
+	left and right camera under flashlight illumination. 1800 images per
+	camera in PNG format.
+
+NewTsukubaStereoDataset/illumination/fluorescent -> Rendered color images for
+	left and right camera under fluorescent illumination. 1800 images per
+	camera in PNG format.
+
+NewTsukubaStereoDataset/illumination/lamps -> Rendered color images for left 
+	and right camera under lamps illumination. 1800 images per camra in 
+	PNG format.
+
+NewTsukubaStereoDataset/groundtruth/depth_maps -> Ground truth depth maps for
+	left and right camera. 1800 images per camera in Portable Float Map 
+	format (PFM). The units of each value is expressed in centimiters 
+	(cm).
+
+NewTsukubaStereoDataset/groundtruth/disparity_maps -> Ground truth disparity 
+	maps for left and right camera. 1800 images per camera in PFM format.
+
+NewTsukubaStereoDatset/groundtruth/occlusion_maps -> Occlusion mask for left
+	and right camera. 1800 images per camera in PNG format. White color
+	represents pixel visible in both cameras, black color represents pixel
+	not visible in current camera.
+
+NewTsukubaStereoDataset/groundtruth/discontinuity_maps -> Near discontinuity 
+	area mask for left and right camera. 1800 images per camera in PNG 
+	format. White color represents pixel near a depth-discontinuity area,
+	grey color represents pixel visible in both cameras, black color 
+	represents pixel not visible in current camera.
+
+NewTsukubaStereoDataset/groundtruth/camera_track.txt -> Ground truth position
+	of the stereo camera (relative to the middle point of the stereo 
+	camera's baseline). 1800 poses (one for each frame). Each line contain
+	6 float values: X Y Z A B C. Where (X, Y, Z) is the 3D position of the
+	camera nad (A, B, C) are the Euler angles (in degrees) that represent
+	the camera orientation.
+
+The resolution of the images is 640x480 pixels, the baseline of the stereo 
+camera is 10cm and the focal length of the camera is 615 pixels.
+ 
+A useful python library to read/write PFM files can be found here:
+https://github.com/MartinPeris/justPFM
+
+
+
+*This work was supported by KAKENHI (23650081).
+81680085
