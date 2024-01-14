@@ -1,5 +1,3 @@
-print('ekrem')
-import pandas as pd
 import numpy as np
 import cv2 
 from pathlib import Path
@@ -12,10 +10,9 @@ from bokeh.models import Div
 
 
 
-# use images until 370
 # dir_path = Path(r'NTSD-complete-v1.0.1\NewTsukubaStereoDataset\illumination\lamps')
 dir_path = Path(r'KITTI_sequence_2\image_l')
-left_imgs = [file for file in dir_path.iterdir() if file.is_file() and file.name.startswith('L')][:15]
+left_imgs = [file for file in dir_path.iterdir() if file.is_file() and file.name.startswith('L')]
 
 
 class MonocularOdometry():
@@ -29,7 +26,20 @@ class MonocularOdometry():
 
     @staticmethod
     def _load_images(directory):
-        # img_paths = [file for file in directory.iterdir() if file.is_file() and file.name.startswith('L')][:140]
+        """
+        Load grayscale images from the specified directory.
+
+        Parameters
+        ----------
+        directory : pathlib.Path
+            The directory containing the images.
+
+        Returns
+        -------
+        list
+            A list of grayscale images.
+        """
+        # img_paths = [file for file in directory.iterdir() if file.is_file() and file.name.startswith('L')]
         img_paths = [file for file in directory.iterdir() if file.is_file()]
         print(img_paths[-1])
         
@@ -38,6 +48,14 @@ class MonocularOdometry():
 
     @staticmethod
     def _form_cam_matrix():
+        """
+        Form the camera matrix based on focal length, principal point, and image size.
+
+        Returns
+        -------
+        np.ndarray
+            The camera matrix.
+        """
         focal_length = [615, 615]  
         principal_point = [320, 240]  
         image_size = (480, 640)  
@@ -89,26 +107,20 @@ class MonocularOdometry():
         search_params = dict(checks=50)
         flann = cv2.FlannBasedMatcher(indexParams=index_params, searchParams=search_params)   
 
-        # Detect keypoints and compute descriptors for the (i-1)'th image
         keypoints1, descriptors1 = orb.detectAndCompute(self.images[i - 1], None)
 
-        # Detect keypoints and compute descriptors for the i'th image
         keypoints2, descriptors2 = orb.detectAndCompute(self.images[i], None)
 
-        # Use FLANN to perform knn matching
         matches = flann.knnMatch(descriptors1, descriptors2, k=2)
 
-        # Apply Lowe's ratio test to select good matches
         good = []
         for m, n in matches:
             if m.distance < 0.60 * n.distance:
                 good.append(m)
 
-        # Extract the keypoints' coordinates for the good matches
         q1 = np.float32([keypoints1[m.queryIdx].pt for m in good])
         q2 = np.float32([keypoints2[m.trainIdx].pt for m in good])
-
-        # Plot matches if requested
+       
         if plot:
             img_matches = cv2.drawMatches(
                 self.images[i - 1], keypoints1,
@@ -116,15 +128,29 @@ class MonocularOdometry():
                 good, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
             )
 
-            # Display the image with matches
             cv2.imshow('Matches', img_matches)
             cv2.waitKey(1)
-            
 
         return q1, q2
     
 
     def get_pose(self, feat_0, feat_1):
+        """
+        Estimate the pose (rotation and translation) between two sets of feature points.
+
+        Parameters
+        ----------
+        feat_0 : np.ndarray
+            Feature points in the first image.
+        feat_1 : np.ndarray
+            Feature points in the second image.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the rotation matrix (R) and translation vector (t).
+        """
+
         Essential, mask = cv2.findEssentialMat(feat_0, feat_1, self.K)
         R, t = self.decomp_essential_mat(Essential, feat_0, feat_1)
 
@@ -154,24 +180,19 @@ class MonocularOdometry():
         T4 = self._transf_matrix(R2,np.ndarray.flatten(-t))
         transformations = [T1, T2, T3, T4]
         
-        # Homogenize K
+
         K = np.concatenate((self.K, np.zeros((3,1)) ), axis = 1)
 
-        # List of projections
+
         projections = [K @ T1, K @ T2, K @ T3, K @ T4]
 
         np.set_printoptions(suppress=True)
-
-        # print ("\nTransform 1\n" +  str(T1))
-        # print ("\nTransform 2\n" +  str(T2))
-        # print ("\nTransform 3\n" +  str(T3))
-        # print ("\nTransform 4\n" +  str(T4))
 
         positives = []
         for P, T in zip(projections, transformations):
             hom_Q1 = cv2.triangulatePoints(self.P, P, q1.T, q2.T)
             hom_Q2 = T @ hom_Q1
-            # Un-homogenize
+    
             Q1 = hom_Q1[:3, :] / hom_Q1[3, :]
             Q2 = hom_Q2[:3, :] / hom_Q2[3, :]  
 
@@ -179,31 +200,38 @@ class MonocularOdometry():
             relative_scale = np.mean(np.linalg.norm(Q1.T[:-1] - Q1.T[1:], axis=-1)/
                                      np.linalg.norm(Q2.T[:-1] - Q2.T[1:], axis=-1))
             positives.append(total_sum + relative_scale)
-            
-
-        # Decompose the Essential matrix using built in OpenCV function
-        # Form the 4 possible transformation matrix T from R1, R2, and t
-        # Create projection matrix using each T, and triangulate points hom_Q1
-        # Transform hom_Q1 to second camera using T to create hom_Q2
-        # Count how many points in hom_feat_0 and hom_Q2 with positive z value
-        # Return R and t pair which resulted in the most points with positive z
 
         max = np.argmax(positives)
         if (max == 2):
-            # print(-t)
+    
             return R1, np.ndarray.flatten(-t)
         elif (max == 3):
-            # print(-t)
+
             return R2, np.ndarray.flatten(-t)
         elif (max == 0):
-            # print(t)
+    
             return R1, np.ndarray.flatten(t)
         elif (max == 1):
-            # print(t)
+    
             return R2, np.ndarray.flatten(t)
         
     
     def visualize_paths(self, pred_path, html_tile="", title="VO exercises", file_out="plot.html"):
+        """
+        Visualize the predicted path in 2D.
+
+        Parameters
+        ----------
+        pred_path : np.ndarray
+            Array containing the predicted path.
+        html_tile : str, optional
+            Title for the HTML output, by default "".
+        title : str, optional
+            Title for the visualization, by default "VO exercises".
+        file_out : str, optional
+            Output file name for the plot, by default "plot.html".
+        """
+
         output_file(file_out, title=html_tile)
         pred_path = np.array(pred_path)
 
@@ -226,6 +254,9 @@ class MonocularOdometry():
 
   
     def main(self):
+        """
+        Main function for visual odometry.
+        """
         estimated_path = []
         cur_pose = np.eye(4)
 

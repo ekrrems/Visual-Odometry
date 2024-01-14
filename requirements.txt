@@ -1,0 +1,6 @@
+bokeh==3.3.3
+matplotlib==3.8.2
+numpy==1.26.3
+opencv-python==4.9.0.80
+pillow==10.2.0
+tqdm==4.66.1
