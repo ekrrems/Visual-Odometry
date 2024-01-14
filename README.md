@@ -25,7 +25,7 @@ Tsukuba Dataset Example         | Estimated Camera Trajectory
 1. Set the data directory as the folder contains sequence images
 2. Run the main script
    ```
-   python main.py
+   python monocular_odometry.py
    ```
 ## Results
 Your Visual Odometry path can be seen in the pop-up browser 

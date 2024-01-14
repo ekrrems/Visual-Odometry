@@ -251,11 +251,10 @@ class MonocularOdometry():
                     [fig],
                     ], sizing_mode='scale_width'))
 
-
   
     def main(self):
         """
-        Main function for visual odometry.
+        Main function for Monocular visual Odometry.
         """
         estimated_path = []
         cur_pose = np.eye(4)
