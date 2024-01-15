@@ -35,4 +35,5 @@ This project is licenced under the [MIT Licence](https://github.com/ekrrems/Visu
 
 ## Acknowledgements
 - [MatLab Monocular Visual Odometry](https://de.mathworks.com/help/vision/ug/monocular-visual-odometry.html)
+- [Nicolai Nielsen](https://www.youtube.com/watch?v=N451VeA8XRA)
 - [CVLAB](https://home.cvlab.cs.tsukuba.ac.jp/home)
